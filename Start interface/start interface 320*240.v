@@ -2,7 +2,6 @@
 module vga
 	(
 		CLOCK_50,						//	On Board 50 MHz
-		// Your inputs and outputs here
 		KEY,		
 		SW,// On Board Keys
 		// The ports below are for the VGA output.  Do not change.
