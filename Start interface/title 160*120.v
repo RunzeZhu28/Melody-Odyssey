@@ -1,15 +1,7 @@
 
-// This is the template for Part 2 of Lab 7.
-//
-// Paul Chow
-// November 2021
-//
-// Part 2 skeleton
-
 module vga
 	(
 		CLOCK_50,						//	On Board 50 MHz
-		// Your inputs and outputs here
 		KEY,		
 		SW,// On Board Keys
 		// The ports below are for the VGA output.  Do not change.
@@ -71,13 +63,8 @@ module vga
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
 		defparam VGA.BACKGROUND_IMAGE = "black.mif";
 			
-	// Put your code here. Your code should produce signals x,y,colour and writeEn
 	// for the VGA controller, in addition to any other functionality your design may require.
-	
 
-   //
-   // Your code goes here
-   //
 	wire L_x, L_y, L_c,plot_enable, black_enable, done;
 	assign resetn = KEY[0];
 				
@@ -135,7 +122,6 @@ char[14] <= 112'h0;
 char[15] <= 112'h0;
 end
 
- //pix_data:输出像素点色彩信息,根据当前像素点坐标指定当前像素点颜色数据
  always@(posedge clk or negedge reset)
  if(!reset)
  colour <= 3'b111;
