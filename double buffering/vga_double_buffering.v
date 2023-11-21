@@ -7,7 +7,6 @@ module vga_double_buffering(
 );
 
 
-assign colour = 3'b101; 
 reg [8:0]x = 9'd114;         
 reg [7:0]y;
 
@@ -45,7 +44,7 @@ end
 
  ram1 ram2_inst(clk_new,ram2_write_data,ram2_read_address,ram2_read_en,ram2_write_address,ram2_write_en,ram2_read_data);
  
- triangle triangle_inst(clk, resetn, x, y, ox, oy);
+ triangle triangle_inst(clk, resetn, x, y, ox, oy,colour);
  endmodule
 
 

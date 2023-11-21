@@ -1,7 +1,7 @@
 module clock_divider(
     input clk, 
 	 input resetn, 
-    output reg out_clk = 0  
+    output reg out_clk = 0  //change to wire
 );
 
 reg [20:0] counter = 21'd0;
@@ -12,13 +12,13 @@ begin
 		else
 	 begin
     counter <= counter + 21'd1;
-	 /*if (counter >= 21'd3) begin
-        out_clk <= ~out_clk;
-        counter <= 21'd0;*/
-	 
-    if (counter >= 21'd833333) begin
+	 if (counter >= 21'd833333) begin
         out_clk <= ~out_clk;
         counter <= 21'd0;
+	 
+    /*if (counter >= 21'd833333) begin
+        out_clk <= ~out_clk;
+        counter <= 21'd0;*/
 		  
     end
 	 end
