@@ -26,7 +26,7 @@ reg [7:0]y;
  wire [4:0] ram2_read_address ;
  wire [7:0] ram2_write_data ;
 
-always@(posedge clk_new)
+always@(posedge clk)
 begin
 if (!resetn) y <= 0;
 if (ram1_read_en == 1'b1) y <=  ram1_read_data;
