@@ -7,14 +7,14 @@ module notes(
   reg [3:0] notes [0:16];
 
   initial begin
-    notes[0] = 4'b1111;
-    notes[1] = 4'b1010;
-	 notes[2] = 4'b0110;
-	 notes[3] = 4'b0101;
-	 notes[4] = 4'b1010;
+    notes[0] = 4'b1000;
+    notes[1] = 4'b0100;
+	 notes[2] = 4'b0010;
+	 notes[3] = 4'b0001;
+	 notes[4] = 4'b1100;
 	 notes[5] = 4'b0101;
-	 notes[6] = 4'b1111;
-    notes[7] = 4'b1010;
+	 notes[6] = 4'b1010;
+    notes[7] = 4'b0101;
 	 notes[8] = 4'b0011;
 	 notes[9] = 4'b1010;
 	 notes[10] = 4'b0101;

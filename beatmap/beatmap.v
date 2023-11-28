@@ -30,7 +30,7 @@ module beatmap
 	wire resetn;
 	assign resetn = KEY[0];
 	
-	// Create the colour, x, y and writeEn wires that are inputs to the controller.
+	// Create the colour, x, y and writeEn wires that are inaputs to the controller.
 
 	wire [2:0] colour;
 	wire [8:0] x;
