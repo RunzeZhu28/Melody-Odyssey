@@ -16,7 +16,7 @@ module beat(clk, resetn, x, y, colour);
   wire clk_50Hz;
   wire clk_10Hz;
   reg [3:0] screen [10:0];
-  reg [2:0] counter;
+  reg [3:0] counter;
   reg [7:0] y_position [10:0];
   wire [7:0] oy_0;
   wire [7:0] oy_1;
@@ -79,24 +79,22 @@ module beat(clk, resetn, x, y, colour);
       note_address <= note_address + 1;
 
 		
-  always@(posedge clk_50Hz)
+  always@(negedge clk_50Hz)
   begin
   if(counter < 3'b100) 
   begin
   counter <= counter+1;
-   y_position[0] <= y_position[0]+ 3;
-	y_position[1] <= y_position[1]+ 3;
-   //y_position[0] <= oy_0;
-	//y_position[1] <= oy_1;
-	y_position[2] <= y_position[2]+ 3;
-	y_position[3] <= y_position[3]+ 3;
-	y_position[4] <= y_position[4]+ 3;
-	y_position[5] <= y_position[5]+ 3;
-	y_position[6] <= y_position[6]+ 3;
-	y_position[7] <= y_position[7]+ 3;
-	y_position[8] <= y_position[8]+ 3;
-	y_position[9] <= y_position[9]+ 3;
-	y_position[10] <=y_position[10]+3;
+	y_position[0] <= y_position[0]+ 4;
+	y_position[1] <= y_position[1]+ 4;
+ 	y_position[2] <= y_position[2]+ 4;
+	y_position[3] <= y_position[3]+ 4;
+	y_position[4] <= y_position[4]+ 4;
+	y_position[5] <= y_position[5]+ 4;
+	y_position[6] <= y_position[6]+ 4;
+	y_position[7] <= y_position[7]+ 4;
+	y_position[8] <= y_position[8]+ 4;
+	y_position[9] <= y_position[9]+ 4;
+	y_position[10] <=y_position[10]+4;
 
   end
   
@@ -174,25 +172,25 @@ module beat(clk, resetn, x, y, colour);
 	else if ( x>=125 && x<= 140)
 		begin
 			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
-			else if(screen[y/20][3] && y>y_position[y/20] && y< (y_position[y/20]+10) && y < 218) colour <= 3'b101;
+			else if((screen[y/20][3] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][3] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b101;
 			else colour <= 3'b111;
 		end
 	else if ( x>=143 && x<= 158)
 		begin
 			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
-			else if(screen[y/20][2] && y>y_position[y/20] && y< (y_position[y/20]+10) && y < 218) colour <= 3'b110;
+			else if((screen[y/20][2] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][2] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b110;
 			else colour <= 3'b111;
 		end
 	else if (x>=161 && x<= 176)
 		begin
 			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
-			else if(screen[y/20][1] && y>y_position[y/20]&& y< (y_position[y/20]+10)&& y < 218)  colour <= 3'b011;
+			else if((screen[y/20][1] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][1] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b011;
 			else colour <= 3'b111;
 		end
 	else if ( x>=179 && x<= 194)
 		begin
 		if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
-			else if(screen[y/20][0] && y>y_position[y/20] && y< (y_position[y/20]+10) && y < 218) colour <= 3'b100;
+			else if((screen[y/20][0] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][0] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219))colour <= 3'b100;
 			else colour <= 3'b111;
 		end
      else if (x == 9'd123 || x == 9'd124 || x == 9'd141 || x == 9'd142|| x == 159 || x == 160 || x == 177 || x == 178 || x == 195 || x == 196)  // background, can be filled later.
@@ -208,18 +206,20 @@ module clock_divider_10(
     output reg out_clk = 0  //change to wire
 );
 
-reg [23:0] counter = 24'd0;
+reg [25:0] counter = 26'd0;
 
 always @(posedge clk) 
 begin
 	if (!resetn)  begin out_clk <= 0; counter <= 0; end
 		else
 	 begin
-    counter <= counter + 24'd1;
-	 if (counter >= 24'd10000000) begin
+    counter <= counter + 26'd1;
+	 /*if (counter >= 26'd4166667 ) begin
         out_clk <= ~out_clk;
-        counter <= 24'd0; 
-	    
+        counter <= 26'd0; */
+	 if (counter >= 26'd5000000) begin
+        out_clk <= ~out_clk;
+        counter <= 26'd0; 
 		  
     end
 	 end
