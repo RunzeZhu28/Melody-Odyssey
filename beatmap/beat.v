@@ -20,6 +20,15 @@ module beat(clk, resetn, x, y, colour);
   reg [7:0] y_position [10:0];
   wire [7:0] oy_0;
   wire [7:0] oy_1;
+  wire [7:0] oy_2;
+  wire [7:0] oy_3;
+  wire [7:0] oy_4;
+  wire [7:0] oy_5;
+  wire [7:0] oy_6;
+  wire [7:0] oy_7;
+  wire [7:0] oy_8;
+  wire [7:0] oy_9;
+  wire [7:0] oy_10;
   
   initial begin
       screen[0] <= 4'b0;
@@ -52,8 +61,17 @@ module beat(clk, resetn, x, y, colour);
 
   clock_divider_50 U2(clk, resetn, clk_50Hz);
   clock_divider_10 U3(clk, resetn, clk_10Hz);
-  //vga_double_buffering U4(clk,resetn, oy_0);
-  //vga_double_buffering_1 U5(clk,resetn, oy_1);
+  vga_double_buffering U4(clk,resetn, oy_0);
+  vga_double_buffering_1 U5(clk,resetn, oy_1);
+  vga_double_buffering_2 U6(clk,resetn, oy_2);
+  vga_double_buffering_3 U7(clk,resetn, oy_3);
+  vga_double_buffering_4 U8(clk,resetn, oy_4);
+  vga_double_buffering_5 U9(clk,resetn, oy_5);
+  vga_double_buffering_6 U10(clk,resetn, oy_6);
+  vga_double_buffering_7 U11(clk,resetn, oy_7);
+  vga_double_buffering_8 U12(clk,resetn, oy_8);
+  vga_double_buffering_9 U13(clk,resetn, oy_9);
+  vga_double_buffering_10 U14(clk,resetn, oy_10);
   
   always @(posedge clk)
     if (!resetn) begin
@@ -84,17 +102,29 @@ module beat(clk, resetn, x, y, colour);
   if(counter < 3'b100) 
   begin
   counter <= counter+1;
-	y_position[0] <= y_position[0]+ 4;
-	y_position[1] <= y_position[1]+ 4;
- 	y_position[2] <= y_position[2]+ 4;
-	y_position[3] <= y_position[3]+ 4;
-	y_position[4] <= y_position[4]+ 4;
-	y_position[5] <= y_position[5]+ 4;
-	y_position[6] <= y_position[6]+ 4;
-	y_position[7] <= y_position[7]+ 4;
-	y_position[8] <= y_position[8]+ 4;
-	y_position[9] <= y_position[9]+ 4;
-	y_position[10] <=y_position[10]+4;
+   //y_position[0] <= y_position[0]+ 4;
+	//y_position[1] <= y_position[1]+ 4;
+   y_position[0] <= oy_0;
+	y_position[1] <= oy_1;
+	y_position[2] <= oy_2;
+	y_position[3] <= oy_3;
+	y_position[4] <= oy_4;
+	y_position[5] <= oy_5;
+	y_position[6] <= oy_6;
+	y_position[7] <= oy_7;
+	y_position[8] <= oy_8;
+	y_position[9] <= oy_9;
+	y_position[10] <= oy_10;
+	
+	//y_position[2] <= y_position[2]+ 4;
+	//y_position[3] <= y_position[3]+ 4;
+	//y_position[4] <= y_position[4]+ 4;
+	//y_position[5] <= y_position[5]+ 4;
+	//y_position[6] <= y_position[6]+ 4;
+	//y_position[7] <= y_position[7]+ 4;
+	//y_position[8] <= y_position[8]+ 4;
+	//y_position[9] <= y_position[9]+ 4;
+	//y_position[10] <=y_position[10]+4;
 
   end
   

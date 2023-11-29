@@ -12,12 +12,12 @@ begin
 		else
 	 begin
     counter <= counter + 21'd1;
+	 /*if (counter >= 21'd833333) begin
+        out_clk <= ~out_clk;
+        counter <= 21'd0;*/
 	 if (counter >= 21'd1000000) begin
         out_clk <= ~out_clk;
-        counter <= 21'd0;
-	 /*if (counter >= 21'd1000000) begin
-        out_clk <= ~out_clk;
-        counter <= 21'd0; */
+        counter <= 21'd0; 
 	    
 		  
     end
