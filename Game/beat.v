@@ -219,29 +219,30 @@ end
   if(counter < 3'b100 ) 
   begin
   counter <= counter+1;
-  y_position[0] <= y_position[0]+ 4;
-	y_position[1] <= y_position[1]+ 4;
-  //y_position[0] <= oy_0;
-	//y_position[1] <= oy_1;
-	//y_position[2] <= oy_2;
-	//y_position[3] <= oy_3;
-	//y_position[4] <= oy_4;
-	//y_position[5] <= oy_5;
-	//y_position[6] <= oy_6;
-	//y_position[7] <= oy_7;
-	//y_position[8] <= oy_8;
-	//y_position[9] <= oy_9;
-	//y_position[10] <= oy_10;
-	
-	y_position[2] <= y_position[2]+ 4;
-	y_position[3] <= y_position[3]+ 4;
-	y_position[4] <= y_position[4]+ 4;
-	y_position[5] <= y_position[5]+ 4;
-	y_position[6] <= y_position[6]+ 4;
-	y_position[7] <= y_position[7]+ 4;
-	y_position[8] <= y_position[8]+ 4;
-	y_position[9] <= y_position[9]+ 4;
-	y_position[10] <=y_position[10]+4;
+  
+  y_position[0] <= oy_0;
+	y_position[1] <= oy_1;
+	y_position[2] <= oy_2;
+	y_position[3] <= oy_3;
+	y_position[4] <= oy_4;
+	y_position[5] <= oy_5;
+	y_position[6] <= oy_6;
+	y_position[7] <= oy_7;
+	y_position[8] <= oy_8;
+	y_position[9] <= oy_9;
+	y_position[10] <= oy_10;
+
+	//y_position[0] <= y_position[0]+ 4;
+	//y_position[1] <= y_position[1]+ 4;
+	//y_position[2] <= y_position[2]+ 4;
+	//y_position[3] <= y_position[3]+ 4;
+	//y_position[4] <= y_position[4]+ 4;
+	//y_position[5] <= y_position[5]+ 4;
+	//y_position[6] <= y_position[6]+ 4;
+	//y_position[7] <= y_position[7]+ 4;
+	//y_position[8] <= y_position[8]+ 4;
+	//y_position[9] <= y_position[9]+ 4;
+	//y_position[10] <=y_position[10]+4;
 
   end
   
