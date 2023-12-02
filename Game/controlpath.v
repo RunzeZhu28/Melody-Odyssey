@@ -176,7 +176,7 @@ begin
 	win <= 1'b0;
 	lose <= 1'b1;
 	map <= 1'b0; 
-	total_miss <= 3'd0; 
+	total_miss <= 3'd7; 
 	end
 	
 	RESULT_1_WAIT: begin
@@ -192,7 +192,7 @@ begin
 	win <= 1'b1;
 	lose <= 1'b0;
 	map <= 1'b0; 
-	total_miss <= 3'd0; 
+	total_miss <= total_miss;
 	end
 	
 	RESULT_2_WAIT: begin
@@ -200,7 +200,7 @@ begin
 	win <= 1'b1;
 	lose <= 1'b0;
 	map <= 1'b0; 
-	total_miss <= 3'd0; 
+	total_miss <= total_miss;
 	end
 	endcase
 end

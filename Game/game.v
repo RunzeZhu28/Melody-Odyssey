@@ -11,7 +11,8 @@ module game
 		VGA_SYNC_N,						//	VGA SYNC
 		VGA_R,   						//	VGA Red[9:0]
 		VGA_G,	 						//	VGA Green[9:0]
-		VGA_B   						//	VGA Blue[9:0]
+		VGA_B,   						//	VGA Blue[9:0]
+		HEX2
 	);
 
 	input			CLOCK_50;				//	50 MHz
@@ -26,6 +27,7 @@ module game
 	output	[7:0]	VGA_R;   				//	VGA Red[7:0] Changed from 10 to 8-bit DAC
 	output	[7:0]	VGA_G;	 				//	VGA Green[7:0]
 	output	[7:0]	VGA_B;   				//	VGA Blue[7:0]
+	output   [6:0] HEX2;
 	
 	wire resetn;
 	assign resetn = KEY[0];
@@ -63,6 +65,6 @@ module game
 			
 	// Put your code here. Your code should produce signals x,y,colour and writeEn
 	// for the VGA controller, in addition to any other functionality your design may require.
-	beat U1(CLOCK_50, resetn, ~KEY[1], ~KEY[2], x, y,colour);
+	beat U1(CLOCK_50, resetn, ~KEY[1], ~KEY[2], ~KEY[3],x, y,colour,HEX2);
 	
 endmodule

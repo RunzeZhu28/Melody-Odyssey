@@ -1,38 +1,25 @@
-module double_buffering(input clk, 
-input resetn,
-input [7:0] ram1_read, 
-input [7:0] ram2_read, 
-input data_en, 
-input [7:0]data,
-input map, 
-output reg ram1_write_en, 
-output reg ram1_read_en, 
-output  [7:0] ram1_write_data, 
-output reg ram2_write_en, 
-output reg ram2_read_en,  
-output wire [7:0] ram2_write_data);
+module double_buffering(clk, resetn,y,map,  ram1_write_en, ram1_read_en, ram1_write_y, ram2_write_en, ram2_read_en, ram2_write_y);
+
+input clk, resetn,map;
+input [7:0]y;
+output reg ram1_write_en,  ram1_read_en, ram2_read_en, ram2_write_en;
+output reg[7:0] ram1_write_y;
+output reg[7:0] ram2_write_y;
+
 
 parameter  WRITE_RAM2_READ_RAM1 = 2'b0,
 			  WRITE_RAM1_READ_RAM2 = 2'b1;
 			  
-reg [1:0] current, next;
-reg [7:0] data_in_reg;
+reg [1:0] current = WRITE_RAM2_READ_RAM1;
+reg [1:0] next;
 
 
-assign ram1_write_data = (ram1_write_en == 1'b1) ? data_in_reg: 8'd0;
-assign ram2_write_data = (ram2_write_en == 1'b1) ? data_in_reg: 8'd0;
-		  
 always@(posedge clk)
-if(!resetn)
-data_in_reg <= 8'd0;
-else if (map)
-data_in_reg <= data;
-else
-data_in_reg <= 8'd0;
-
-initial begin
-	current <= WRITE_RAM2_READ_RAM1;
-	data_in_reg <= 8'b0;
+begin
+if (ram1_write_en)  
+ram1_write_y <= y;
+else if (ram2_write_en)
+ram2_write_y <= y;
 end
 
 
@@ -60,8 +47,9 @@ ram1_write_en <= 1'b0;
 ram2_write_en <= 1'b0;
 ram1_read_en <= 1'b0;
 ram2_read_en <= 1'b0;
-case(current)
 
+
+case(current)
 WRITE_RAM2_READ_RAM1:
 begin
 ram2_write_en <= 1'b1;
