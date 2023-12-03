@@ -41,7 +41,7 @@ assign lose_result_y = ((x >= 10'd112) && (x < 10'd208)&&(y >= 10'd108)&&(y < 10
 
   wire [3:0] note;
   reg [12:0] note_address;
-  wire clk_50Hz;
+  wire clk_60Hz;
   wire clk_10Hz;
   reg [3:0] screen [10:0];
   reg [3:0] temp [10:0];
@@ -92,21 +92,21 @@ assign lose_result_y = ((x >= 10'd112) && (x < 10'd208)&&(y >= 10'd108)&&(y < 10
 	 done <=0;
   end*/
 	
-  notes U1(clk, note_address, note);
-
-  clock_divider_50 U2(clk, resetn, clk_50Hz);
+  //notes U1(clk, note_address, note);
+  rom  U1(note_address,clk, note);
+  clock_divider_60 U2(clk, resetn, clk_60Hz);
   clock_divider_10 U3(clk, resetn, clk_10Hz);
-  vga_double_buffering U4(clk,   clk_50Hz, resetn, map, oy_0);
-  vga_double_buffering_1 U5(clk, clk_50Hz, resetn, map,oy_1);
-  vga_double_buffering_2 U6(clk, clk_50Hz, resetn, map,oy_2);
-  vga_double_buffering_3 U7(clk, clk_50Hz, resetn, map,oy_3);
-  vga_double_buffering_4 U8(clk, clk_50Hz, resetn, map,oy_4);
-  vga_double_buffering_5 U9(clk, clk_50Hz, resetn, map,oy_5);
-  vga_double_buffering_6 U10(clk, clk_50Hz, resetn, map,oy_6);
-  vga_double_buffering_7 U11(clk, clk_50Hz, resetn, map,oy_7);
-  vga_double_buffering_8 U12(clk, clk_50Hz, resetn, map,oy_8);
-  vga_double_buffering_9 U13(clk, clk_50Hz, resetn, map,oy_9);
-  vga_double_buffering_10 U14(clk, clk_50Hz, resetn,map, oy_10);
+  vga_double_buffering U4(clk,   clk_60Hz, resetn, map, oy_0);
+  vga_double_buffering_1 U5(clk, clk_60Hz, resetn, map,oy_1);
+  vga_double_buffering_2 U6(clk, clk_60Hz, resetn, map,oy_2);
+  vga_double_buffering_3 U7(clk, clk_60Hz, resetn, map,oy_3);
+  vga_double_buffering_4 U8(clk, clk_60Hz, resetn, map,oy_4);
+  vga_double_buffering_5 U9(clk, clk_60Hz, resetn, map,oy_5);
+  vga_double_buffering_6 U10(clk, clk_60Hz, resetn, map,oy_6);
+  vga_double_buffering_7 U11(clk, clk_60Hz, resetn, map,oy_7);
+  vga_double_buffering_8 U12(clk, clk_60Hz, resetn, map,oy_8);
+  vga_double_buffering_9 U13(clk, clk_60Hz, resetn, map,oy_9);
+  vga_double_buffering_10 U14(clk, clk_60Hz, resetn,map, oy_10);
   hex_decoder U15({1'b0,health[2:0]}, HEX2);
  
 
@@ -247,32 +247,16 @@ lose_result[23] <= 96'h000000000000000000000000;
 
 end
   
-  always @(posedge clk)
-    if (!resetn && !clk_50Hz) begin
-      x <= 0;
-      y <= 0;
-    end
-    else if (x < 319) begin
-      x <= x + 1;
-    end 
-    else begin
-      x <= 0;
-      if (y < 239) begin
-        y <= y + 1;
-      end else begin
-        y <= 0;
-      end
-    end
+
 
   always @(posedge clk_10Hz)
-    if (!resetn)
+    if (!resetn || !map)
       note_address <= 0;
-	 else if(ui) note_address <= 0;
     else //if(map && !done)   error here
       note_address <= note_address + 1;
 
 		
-  always@(posedge clk_50Hz)
+  always@(posedge clk_60Hz)
   begin
   if (!map)
   begin
@@ -299,6 +283,49 @@ end
 		  y_position[8] <= 8'd160;
 		  y_position[9] <= 8'd180;
 		  y_position[10] <= 8'd200;
+		  temp[1][0] <= screen[0][0];
+  temp[2][0] <= 4'b0;
+  temp[3][0] <= 4'b0;
+  temp[4][0] <= 4'b0;
+  temp[5][0] <= 4'b0;
+  temp[6][0] <= 4'b0;
+  temp[7][0] <= 4'b0;
+  temp[8][0] <= 4'b0;
+  temp[9][0] <= 4'b0;
+  temp[10][0] <=4'b0;
+
+  temp[1][1] <= 4'b0;
+  temp[2][1] <= 4'b0;
+  temp[3][1] <= 4'b0;
+  temp[4][1] <= 4'b0;
+  temp[5][1] <= 4'b0;
+  temp[6][1] <= 4'b0;
+  temp[7][1] <= 4'b0;
+  temp[8][1] <= 4'b0;
+  temp[9][1] <= 4'b0;
+  temp[10][1] <=4'b0;
+
+  temp[1][2] <= 4'b0;
+  temp[2][2] <= 4'b0;
+  temp[3][2] <= 4'b0;
+  temp[4][2] <= 4'b0;
+  temp[5][2] <= 4'b0;
+  temp[6][2] <= 4'b0;
+  temp[7][2] <= 4'b0;
+  temp[8][2] <= 4'b0;
+  temp[9][2] <= 4'b0;
+  temp[10][2] <=4'b0;
+
+  temp[1][3] <= 4'b0;
+  temp[2][3] <= 4'b0;
+  temp[3][3] <= 4'b0;
+  temp[4][3] <= 4'b0;
+  temp[5][3] <= 4'b0;
+  temp[6][3] <= 4'b0;
+  temp[7][3] <= 4'b0;
+  temp[8][3] <= 4'b0;
+  temp[9][3] <= 4'b0;
+  temp[10][3] <=4'b0;
   end
   if(counter < 3'b11 && map) 
   begin
@@ -375,7 +402,7 @@ y_position[10] <= oy_10;
   temp[9][3] <= screen[8][3];
   temp[10][3] <= screen[9][3];
   
-  y_position[0] <= oy_0;
+y_position[0] <= oy_0;
 y_position[1] <= oy_1;
 y_position[2] <= oy_2;
 y_position[3] <= oy_3;
@@ -478,10 +505,11 @@ y_position[10] <= oy_10;
 	if(key_3) press_3 <= 1'b1;
 	end
 	end
+
 	
-	always@(posedge clk_50Hz)
+	always@(posedge clk_60Hz)
 	begin
- 	if(y_position[10] >= 8'd210 && ((screen[10][1] && !press_1) || (screen[10][2] && !press_2) || (screen[10][3] && !press_3) ||(screen[10][0] && !press_0))) miss<= 1;
+ 	if (y_position[10] >= 8'd210 && ((screen[10][1] && !press_1) || (screen[10][2] && !press_2) || (screen[10][3] && !press_3) ||(screen[10][0] && !press_0))) miss<= 1;
 	else miss <= 0;
 	end
 		
@@ -509,6 +537,7 @@ y_position[10] <= oy_10;
 // end
  
  reg [20:0] timer = 21'd0;
+ reg [20:0] white = 21'd0;
 
 always @(posedge clk) 
 begin
@@ -521,6 +550,23 @@ begin
     end
 	 end
 end
+
+  always @(posedge clk)
+    if (!resetn && !clk_60Hz) begin
+      x <= 0;
+      y <= 0;
+    end
+    else if (x < 319) begin
+      x <= x + 1;
+    end 
+    else begin
+      x <= 0;
+      if (y < 239) begin
+        y <= y + 1;
+      end else begin
+        y <= 0;
+      end
+    end
  
   always @(posedge clk)
   begin
@@ -545,7 +591,8 @@ end
 	begin
 	if ( x>=125 && x<= 140)
 		begin
-			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;	
+			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;	 
+			
 			else if((screen[y/20][3] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][3] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b101;
 			else colour <= 3'b111;
 		end

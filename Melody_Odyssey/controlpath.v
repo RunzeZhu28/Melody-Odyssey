@@ -183,7 +183,7 @@ begin
 	win <= 1'b0;
 	lose <= 1'b0;
 	map <= 1'b1; 
-	total_miss <= 3'd1; 
+	total_miss <= 3'd0; 
 	end
 	
 	STATE_1: begin 

@@ -1,4 +1,4 @@
-module clock_divider_50(
+module clock_divider_60(
     input clk, 
 	 input resetn, 
     output reg out_clk = 0  //change to wire
