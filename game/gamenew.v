@@ -1,16 +1,17 @@
-module beat(clk, resetn, key_1, key_2,key_3,x, y, colour,HEX2);
+module beat(clk, resetn, key_0, key_1,key_2,key_3, key_4, key_5, x, y, colour,HEX2);
 
-  input clk, resetn, key_1, key_2,key_3;
+  input clk, resetn, key_1, key_2,key_3, key_4, key_5, key_0;
   output reg [8:0] x;
   output reg [7:0] y;
   output reg [2:0] colour;
   output [6:0]HEX2;
   reg miss = 0;
   reg done = 0;
+  reg press_1, press_2, press_3, press_0;
   wire ui, map, win, lose;
   wire [2:0] total_miss;
   
-  control_path control_path_inst(clk, resetn, key_1, key_2, miss, done, ui, map, total_miss,win, lose); 
+  control_path control_path_inst(clk, resetn, key_4, key_5, miss, done, ui, map, total_miss,win, lose); 
 
   wire [7:0] title_x ; //title coordinate 0-223
   wire [5:0] title_y ; //title y coordinate 0-31
@@ -91,8 +92,8 @@ assign lose_result_y = ((x >= 10'd112) && (x < 10'd208)&&(y >= 10'd108)&&(y < 10
 	 done <=0;
   end*/
 	
-  notes U1(clk, note_address, note);
-
+  //notes U1(clk, note_address, note);
+  rom  U1(note_address,clk, note);
   clock_divider_50 U2(clk, resetn, clk_50Hz);
   clock_divider_10 U3(clk, resetn, clk_10Hz);
   vga_double_buffering U4(clk,   clk_50Hz, resetn, map, oy_0);
@@ -264,9 +265,8 @@ end
     end
 
   always @(posedge clk_10Hz)
-    if (!resetn)
+    if (!resetn || !map)
       note_address <= 0;
-	 else if(ui) note_address <= 0;
     else //if(map && !done)   error here
       note_address <= note_address + 1;
 
@@ -459,16 +459,28 @@ y_position[10] <= oy_10;
 	else done <= 1'b0;
   end
   
- reg press;
+
 	always @(posedge clk)
 	begin
-	if(y_position[10] == 8'd200) press <= 1'b0;
-	else if(key_3) press <= 1'b1;
+	if(y_position[10] == 8'd200) 
+	begin 
+	press_0 <= 1'b0; 
+	press_1 <= 1'b0; 
+	press_2 <= 1'b0; 
+	press_3 <= 1'b0; 
+	end
+	else 
+	begin
+	if(key_0) press_0 <= 1'b1;
+	if(key_1) press_1 <= 1'b1;
+	if(key_2) press_2 <= 1'b1;
+	if(key_3) press_3 <= 1'b1;
+	end
 	end
 	
 	always@(posedge clk_50Hz)
 	begin
- 	if(y_position[10] >= 8'd210 && screen[10][3] && !press) miss <= 1;
+ 	if(y_position[10] >= 8'd210 && ((screen[10][1] && !press_1) || (screen[10][2] && !press_2) || (screen[10][3] && !press_3) ||(screen[10][0] && !press_0))) miss<= 1;
 	else miss <= 0;
 	end
 		
