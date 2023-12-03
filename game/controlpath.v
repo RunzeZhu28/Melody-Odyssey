@@ -4,19 +4,26 @@ input clk, resetn, key_1, key_2, miss,done;
 output reg interface, map, win, lose;
 output reg [2:0] total_miss;
 
-parameter IDLE =4'b0000,
-STATE_0 = 4'b0001,
-STATE_1 = 4'b0010,
-STATE_2 = 4'b0011,
-STATE_3 = 4'b0100,
-STATE_4 = 4'b0101,
-STATE_5 = 4'b0110,
-STATE_6 = 4'b0111,
-RESULT_1 = 4'b1000,
-RESULT_2 = 4'b1001,
-IDLE_WAIT = 4'b1010,
-RESULT_1_WAIT = 4'b1011,
-RESULT_2_WAIT = 4'b1100;
+parameter IDLE =5'b00000,
+IDLE_WAIT = 5'b00001,
+STATE_0 = 5'b00010,
+STATE_0_WAIT = 5'b00011,
+STATE_1 = 5'b00100,
+STATE_1_WAIT = 5'b00101,
+STATE_2 = 5'b00110,
+STATE_2_WAIT = 5'b00111,
+STATE_3 = 5'b01000,
+STATE_3_WAIT = 5'b01001,
+STATE_4 = 5'b01010,
+STATE_4_WAIT = 5'b01011,
+STATE_5 = 5'b01100,
+STATE_5_WAIT = 5'b01101,
+STATE_6 = 5'b01110,
+RESULT_1 = 5'b01111,
+RESULT_2 = 5'b10000,
+
+RESULT_1_WAIT = 5'b10001,
+RESULT_2_WAIT = 5'b10010;
 
 reg [3:0] current, next;
 
@@ -39,42 +46,90 @@ begin
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_1 : STATE_0;
+			else next = miss? STATE_0_WAIT : STATE_0;
+			end
+			
+		STATE_0_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_0_WAIT:STATE_1;
 			end
 			
 		STATE_1 : begin 
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 	
-			else next = miss? STATE_2 : STATE_1;
+			else next = miss? STATE_1_WAIT : STATE_1;
+			end
+			
+		STATE_1_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_1_WAIT:STATE_2;
 			end
 			
 		STATE_2 : begin 
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_3 : STATE_2;
+			else next = miss? STATE_2_WAIT : STATE_2;
+			end
+			
+		STATE_2_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_2_WAIT:STATE_3;
 			end
 			
 		STATE_3 : begin 
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_4 : STATE_3;
+			else next = miss? STATE_3_WAIT : STATE_3;
+			end
+		
+		STATE_3_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_3_WAIT:STATE_4;
 			end
 			
 		STATE_4 : begin 
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_5 : STATE_4;
+			else next = miss? STATE_4_WAIT : STATE_4;
+			end
+			
+		STATE_4_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_4_WAIT:STATE_5;
 			end
 			
 		STATE_5 : begin 
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_6 : STATE_5;
+			else next = miss? STATE_5_WAIT : STATE_5;
+			end
+			
+		STATE_5_WAIT:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_5_WAIT:STATE_6;
 			end
 			
 		STATE_6 : begin 
@@ -123,12 +178,28 @@ begin
 	total_miss <= 3'd0; 
 	end
 	
+	STATE_0_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd0; 
+	end
+	
 	STATE_1: begin 
 	interface <= 1'b0;
 	win <= 1'b0;
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd1; 
+	end
+	
+	STATE_1_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd2; 
 	end
 	
 	STATE_2: begin 
@@ -139,12 +210,28 @@ begin
 	total_miss <= 3'd2; 
 	end
 	
+	STATE_2_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd3; 
+	end
+	
 	STATE_3:begin 
 	interface <= 1'b0;
 	win <= 1'b0;
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd3;
+	end
+	
+	STATE_3_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd4; 
 	end
 	
 	STATE_4: begin 
@@ -155,12 +242,28 @@ begin
 	total_miss <= 3'd4; 
 	end
 	
+	STATE_4_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd5; 
+	end
+	
 	STATE_5: begin 
 	interface <= 1'b0;
 	win <= 1'b0;
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd5; 
+	end
+	
+	STATE_5_WAIT:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd6; 
 	end
 	
 	STATE_6: begin 
