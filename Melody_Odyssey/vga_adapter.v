@@ -198,6 +198,8 @@ module vga_adapter(
 	assign writeEn = (plot) & (valid_160x120 | valid_320x240);
 	/* Allow the user to plot a pixel if and only if the (X,Y) coordinates supplied are in a valid range. */
 	
+	
+	
 	/* Create video memory. */
 	altsyncram	VideoMemory (
 				.wren_a (writeEn),

@@ -41,6 +41,7 @@ module game
 	wire [7:0] y;
 	wire writeEn;
 	
+	//assign writeEn = ~VGA_VS;
 	// Create an Instance of a VGA controller - there can be only one!
 	// Define the number of colours as well as the initial background
 	// image file (.MIF) for the controller.
@@ -50,7 +51,7 @@ module game
 			.colour(colour),
 			.x(x),
 			.y(y),
-			.plot(1'b1),
+			.plot(1),
 			/* Signals for the DAC to drive the monitor. */
 			.VGA_R(VGA_R),
 			.VGA_G(VGA_G),
@@ -64,9 +65,11 @@ module game
 		defparam VGA.MONOCHROME = "FALSE";
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
 		defparam VGA.BACKGROUND_IMAGE = "black.mif";
+		
+		
 			
 	// Put your code here. Your code should produce signals x,y,colour and writeEn
 	// for the VGA controller, in addition to any other functionality your design may require.
-	beat U1(CLOCK_50, resetn, ~KEY[0], ~KEY[1], ~KEY[2], ~KEY[3], SW[1],SW[2],x, y,colour,HEX2);
+	beat U1(CLOCK_50, resetn, ~KEY[0], ~KEY[1], ~KEY[2], ~KEY[3], SW[1],SW[2],VGA_VS,x, y, colour,HEX2);
 	
 endmodule

@@ -1,6 +1,6 @@
-module beat(clk, resetn, key_0, key_1,key_2,key_3, key_4, key_5, x, y, colour,HEX2);
+module beat(clk, resetn, key_0, key_1,key_2,key_3, key_4, key_5, vs, x, y, colour,HEX2);
 
-  input clk, resetn, key_1, key_2,key_3, key_4, key_5, key_0;
+  input clk, resetn, key_1, key_2,key_3, key_4, key_5, key_0,vs;
   output reg [8:0] x;
   output reg [7:0] y;
   output reg [2:0] colour;
@@ -541,7 +541,7 @@ y_position[10] <= oy_10;
 
 always @(posedge clk) 
 begin
-	if (!resetn)  begin  timer <= 0; end
+	if (!resetn || (vs && timer ==0 ))  begin  timer <= 0; end
 		else 
 	 begin
     timer <= timer + 21'd1;
@@ -551,12 +551,15 @@ begin
 	 end
 end
 
+
+
+
   always @(posedge clk)
-    if (!resetn && !clk_60Hz) begin
+    if (!resetn || timer == 0) begin
       x <= 0;
       y <= 0;
     end
-    else if (x < 319) begin
+    else if (x < 319 ) begin
       x <= x + 1;
     end 
     else begin
@@ -647,6 +650,9 @@ end
 				colour <= 3'b111;
 		end
 	end
+	
+	
+
 endmodule
 
 
