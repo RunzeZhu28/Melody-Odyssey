@@ -1,13 +1,13 @@
 module Keyboard(CLOCK_50, LEDR, KEY, PS2_DAT, PS2_CLK);
 	input CLOCK_50;
-	input [3:0] KEY;
+	input KEY;
 	
 	inout PS2_CLK;
 	inout PS2_DAT;
 	
 	output[9:0]LEDR;
 															
-	KeyboardDecoder u0(.clk(CLOCK_50), .reset(~KEY[0]), 
+	KeyboardDecoder u0(.clk(CLOCK_50), .reset(~KEY), 
 							.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), 
 							.D(LEDR[0]), 
 							.F(LEDR[1]), 
@@ -16,13 +16,14 @@ module Keyboard(CLOCK_50, LEDR, KEY, PS2_DAT, PS2_CLK);
 							.Restart(LEDR[4]), 
 							.ResetGame(LEDR[5]), 
 							.Player1(LEDR[6]),
-							.Player2(LEDR[7]));
+							.Player2(LEDR[7]),
+							.Player3(LEDR[8]));
 			
 	
 endmodule
 
 
-module KeyboardDecoder(clk, reset, PS2_CLK, PS2_DAT, D, F, J, K, Restart, ResetGame, Player1, Player2);
+module KeyboardDecoder(clk, reset, PS2_CLK, PS2_DAT, D, F, J, K, Restart, ResetGame, Player1, Player2, Player3);
 	
 	input clk, reset;
 	
@@ -32,7 +33,34 @@ module KeyboardDecoder(clk, reset, PS2_CLK, PS2_DAT, D, F, J, K, Restart, ResetG
 	wire[7:0]	key_data;
 	wire key_pressed;	
 	reg	[7:0]	RawData;
-	output D, F, J, K, Restart, ResetGame, Player1, Player2;
+	
+	wire [8:0] PS2_Key_Pressed;
+	output reg D, F, J, K, Restart, ResetGame, Player1, Player2, Player3;
+	
+	always@(posedge clk) begin
+		if (reset) begin
+			D <= 1'b0;
+			F <= 1'b0;
+			J <= 1'b0;
+			K <= 1'b0;
+			Restart <= 1'b0;
+			ResetGame <= 1'b0;
+			Player1 <= 1'b0;
+			Player2 <= 1'b0;
+			Player3 <= 1'b0;
+		end
+		else begin
+			D <= PS2_Key_Pressed[0];
+			F <= PS2_Key_Pressed[1];
+			J <= PS2_Key_Pressed[2];
+			K <= PS2_Key_Pressed[3];
+			Restart <= PS2_Key_Pressed[4];
+			ResetGame <= PS2_Key_Pressed[5];
+			Player1 <= PS2_Key_Pressed[6];
+			Player2 <= PS2_Key_Pressed[7];
+			Player3 <= PS2_Key_Pressed[8];
+		end
+	end
 	
 	
 	always @(posedge clk)
@@ -44,17 +72,11 @@ module KeyboardDecoder(clk, reset, PS2_CLK, PS2_DAT, D, F, J, K, Restart, ResetG
 	end
 	
 	
-	control c1(.clk(clk), .reset(reset), 
-			.Data(RawData), 
-			.D(D), 
-			.F(F), 
-			.J(J),
-			.K(K), 
-			.restart(Restart),
-			.RG(ResetGame), 	
-			.Player1(Player1), 
-			.Player2(Player2),
-			.keypressed(key_pressed)
+	PS2_Keyboard c1(.PS2_Clock(clk), 
+			.PS2_Data(RawData), 
+			.reset(reset), 
+			
+			.PS2_Key_Pressed(PS2_Key_Pressed)
 	);
 	
 	PS2_Controller PS2 (
@@ -68,109 +90,121 @@ module KeyboardDecoder(clk, reset, PS2_CLK, PS2_DAT, D, F, J, K, Restart, ResetG
 
 endmodule
 
-module control(clk, reset, Data, D, F, J, K, restart, RG, Player1, Player2, keypressed);
-	input clk, reset, keypressed;
-	output reg D, F, J, K, restart, RG, Player1, Player2;
-	input [7:0] Data;
+
 	
-	reg [3:0] cur, nxt;
-	
-	localparam idle = 4'd0,
-				D_pressed = 4'd1,
-				F_pressed = 4'd2,
-				J_pressed = 4'd3,
-				K_pressed = 4'd4,
-				restartgame = 4'd5,
-				resetgame = 4'd6,
-				p1 = 4'd7,
-				p2 = 4'd8,
-				load = 4'd9,
-				wait1 = 4'd10;
-	
-	
-	
-	always@(*)
-	begin
-		case(cur)
-			load: begin
-				if(Data[7:0] == 8'h23)
-					nxt = D_pressed;
-				else if(Data[7:0] == 8'h2B)
-					nxt = F_pressed;
-				else if(Data[7:0] == 8'h3B)
-					nxt = J_pressed;
-				else if(Data[7:0] == 8'h42)
-					nxt = K_pressed;
-				else if(Data[7:0] == 8'h5A)
-					nxt = restartgame;	//enter
-				else if(Data[7:0] == 8'h76)
-					nxt = resetgame;		//esc
-				else if(Data[7:0] == 8'h16)
-					nxt = p1;
-				else if(Data[7:0] == 8'h1E)
-					nxt = p2;
-				else
-					nxt = idle;
-				end
-				
-			D_pressed: nxt = (Data == 8'hF0)? idle:D_pressed;
-			F_pressed: nxt = (Data == 8'hF0)? idle:F_pressed;
-			J_pressed: nxt = (Data == 8'hF0)? idle:J_pressed;
-			K_pressed: nxt = (Data == 8'hF0)? idle:K_pressed;
-			restartgame: nxt = (Data == 8'hF0)? idle:restartgame;
-			resetgame: nxt = (Data == 8'hF0)? idle:resetgame;
-			p1: nxt = (Data == 8'hF0)? idle:p1;
-			p2: nxt = (Data == 8'hF0)? idle:p2;
-			idle: nxt = keypressed?wait1: idle;
-			wait1: nxt = keypressed?load: wait1;
-			default: nxt = idle;
-		endcase
+module PS2_Keyboard(
+    input PS2_Clock,
+    input [7: 0] PS2_Data,
+	 input reset,
+
+
+    output reg [8:0] PS2_Key_Pressed
+);
+    parameter ENTER = 8'h5A;        //PS2_Key_Pressed[0] = 1
+    parameter D     = 8'h23;        //PS2_Key_Pressed[1] = 1
+    parameter F     = 8'h2B;        //PS2_Key_Pressed[2] = 1
+    parameter J     = 8'h3B;        //PS2_Key_Pressed[3] = 1
+    parameter K     = 8'h42;        //PS2_Key_Pressed[4] = 1
+    parameter ESC   = 8'h76;        //PS2_Key_Pressed[5] = 1
+	 parameter Break = 8'hF0;        //PS2_Key_Pressed[i] = 0 when Break is detected
+	 parameter Key1  = 8'h16;
+	 parameter Key2  = 8'h1E;
+	 parameter Key3  = 8'h26;
+
+    reg [15:0] PS2_Data_Reg;
+	 
+//	 reg [5:0] PS2_Key_Pressed;
+//	 assign w[0] = PS2_Key_Pressed[0];
+//	 assign w[1] = PS2_Key_Pressed[1];
+//	 assign w[2] = PS2_Key_Pressed[2];
+//	 assign w[3] = PS2_Key_Pressed[3];
+//	 assign w[4] = PS2_Key_Pressed[4];
+//	 assign w[5] = PS2_Key_Pressed[5];
+
+always@(posedge PS2_Clock) begin
+	if (reset) begin
+		PS2_Data_Reg <= 16'b0;
 	end
-	
-	always@(*)
-	begin
-		D = 1'b0;
-		F = 1'b0;
-		J = 1'b0;
-		K = 1'b0;
-		restart = 1'b0;
-		RG = 1'b0;
-		Player1 = 1'b0;
-		Player2 = 1'b0;
-		
-		case(cur)
-			D_pressed: begin
-				D = 1'b1;
-			end
-			F_pressed: begin
-				F = 1'b1;
-			end
-			J_pressed: begin
-				J = 1'b1;
-			end
-			K_pressed: begin
-				K = 1'b1;
-			end
-			restartgame: begin
-				restart = 1'b1;
-			end
-			resetgame: begin	
-				RG = 1'b1;
-			end
-			p1: begin
-				Player1 = 1'b1;
-			end
-			p2: begin
-				Player2 = 1'b1;
-			end
-		endcase
+	else begin
+      PS2_Data_Reg <= {PS2_Data_Reg[7:0], PS2_Data};
 	end
-	
-	always@(posedge clk)
-    begin
-        if(reset)
-            cur <= idle;
-        else
-            cur <= nxt;
-    end
+end
+
+always@(posedge PS2_Clock) begin
+	if  (PS2_Data_Reg[15:8] == Break) begin
+            case (PS2_Data_Reg[7:0])
+                ENTER: begin
+                    PS2_Key_Pressed[0] <= 1'b0;
+                end
+                D: begin
+                    PS2_Key_Pressed[1] <= 1'b0;
+                end
+                F: begin
+                    PS2_Key_Pressed[2] <= 1'b0;
+                end
+                J: begin
+                    PS2_Key_Pressed[3] <= 1'b0;
+                end
+                K: begin
+                    PS2_Key_Pressed[4] <= 1'b0;
+                end
+                ESC: begin
+                    PS2_Key_Pressed[5] <= 1'b0;
+                end
+					 Key1: begin
+						  PS2_Key_Pressed[6] <= 1'b0;
+					 end
+					 Key2: begin
+						  PS2_Key_Pressed[7] <= 1'b0;
+					 end
+					 Key3: begin
+						  PS2_Key_Pressed[8] <= 1'b0;
+					 end
+					 Break: begin
+						  
+					 end
+                //default: begin    
+                //dnt know whether it is necessary to have a default case here
+            endcase
+	end
+	else begin
+            case (PS2_Data_Reg[7:0])
+                ENTER: begin
+                    PS2_Key_Pressed[0] <= 1'b1;
+                end
+                D: begin
+                    PS2_Key_Pressed[1] <= 1'b1;
+                end
+                F: begin
+                    PS2_Key_Pressed[2] <= 1'b1;
+                end
+                J: begin
+                    PS2_Key_Pressed[3] <= 1'b1;
+                end
+                K: begin
+                    PS2_Key_Pressed[4] <= 1'b1;
+                end
+                ESC: begin
+                    PS2_Key_Pressed[5] <= 1'b1;
+                end
+					 Key1: begin
+						  PS2_Key_Pressed[6] <= 1'b1;
+					 end
+					 Key2: begin
+						  PS2_Key_Pressed[7] <= 1'b1;
+					 end
+					 Key3: begin
+						  PS2_Key_Pressed[8] <= 1'b1;
+					 end
+					 Break: begin
+						  PS2_Key_Pressed <= 9'b000000;
+					 end
+            default: begin
+                    PS2_Key_Pressed <= 9'b000000;
+                end
+            endcase
+	end
+
+end
+
 endmodule
