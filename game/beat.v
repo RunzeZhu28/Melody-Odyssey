@@ -1,16 +1,22 @@
-module beat(clk, resetn, key_1, key_2,key_3,x, y, colour,HEX2);
+module beat(clk, resetn, key_0, key_1,key_2,key_3, key_4, key_5, easy, hard, master, vs, x, y, colour,HEX3, Start);
 
-  input clk, resetn, key_1, key_2,key_3;
+  input clk, resetn, key_1, key_2,key_3, key_4, key_5, key_0,easy,hard,vs,master;
   output reg [8:0] x;
   output reg [7:0] y;
   output reg [2:0] colour;
-  output [6:0]HEX2;
+  output [6:0]HEX3;
   reg miss = 0;
   reg done = 0;
+  reg press_1, press_2, press_3, press_0;
   wire ui, map, win, lose;
   wire [2:0] total_miss;
+  output reg Start;
+  reg difficulty = 0;
+  wire chance;
+  reg recover = 0;
+  reg Master = 0;
   
-  control_path control_path_inst(clk, resetn, key_1, key_2, miss, done, ui, map, total_miss,win, lose); 
+  control_path control_path_inst(clk, resetn, key_4, key_5, miss,recover, Master, done, ui, map, chance,total_miss,win, lose); 
 
   wire [7:0] title_x ; //title coordinate 0-223
   wire [5:0] title_y ; //title y coordinate 0-31
@@ -40,9 +46,10 @@ assign lose_result_y = ((x >= 10'd112) && (x < 10'd208)&&(y >= 10'd108)&&(y < 10
 
   wire [3:0] note;
   reg [12:0] note_address;
-  wire clk_50Hz;
+  wire clk_60Hz;
   wire clk_10Hz;
   reg [3:0] screen [10:0];
+  reg [3:0] temp [10:0];
   reg [3:0] counter;
   reg [7:0] y_position [10:0];
   reg [3:0] possible_miss = 4'b0;
@@ -90,22 +97,22 @@ assign lose_result_y = ((x >= 10'd112) && (x < 10'd208)&&(y >= 10'd108)&&(y < 10
 	 done <=0;
   end*/
 	
-  notes U1(clk, note_address, note);
-
-  clock_divider_50 U2(clk, resetn, clk_50Hz);
+  //notes U1(clk, note_address, note);
+  rom  U1(note_address,clk, note);
+  clock_divider_60 U2(clk, resetn, clk_60Hz);
   clock_divider_10 U3(clk, resetn, clk_10Hz);
-  vga_double_buffering U4(clk,   clk_50Hz, resetn, map, oy_0);
-  vga_double_buffering_1 U5(clk, clk_50Hz, resetn, map,oy_1);
-  vga_double_buffering_2 U6(clk, clk_50Hz, resetn, map,oy_2);
-  vga_double_buffering_3 U7(clk, clk_50Hz, resetn, map,oy_3);
-  vga_double_buffering_4 U8(clk, clk_50Hz, resetn, map,oy_4);
-  vga_double_buffering_5 U9(clk, clk_50Hz, resetn, map,oy_5);
-  vga_double_buffering_6 U10(clk, clk_50Hz, resetn, map,oy_6);
-  vga_double_buffering_7 U11(clk, clk_50Hz, resetn, map,oy_7);
-  vga_double_buffering_8 U12(clk, clk_50Hz, resetn, map,oy_8);
-  vga_double_buffering_9 U13(clk, clk_50Hz, resetn, map,oy_9);
-  vga_double_buffering_10 U14(clk, clk_50Hz, resetn,map, oy_10);
-  hex_decoder U15({1'b0,health[2:0]}, HEX2);
+  vga_double_buffering U4(clk,   clk_60Hz, resetn, map, oy_0);
+  vga_double_buffering_1 U5(clk, clk_60Hz, resetn, map,oy_1);
+  vga_double_buffering_2 U6(clk, clk_60Hz, resetn, map,oy_2);
+  vga_double_buffering_3 U7(clk, clk_60Hz, resetn, map,oy_3);
+  vga_double_buffering_4 U8(clk, clk_60Hz, resetn, map,oy_4);
+  vga_double_buffering_5 U9(clk, clk_60Hz, resetn, map,oy_5);
+  vga_double_buffering_6 U10(clk, clk_60Hz, resetn, map,oy_6);
+  vga_double_buffering_7 U11(clk, clk_60Hz, resetn, map,oy_7);
+  vga_double_buffering_8 U12(clk, clk_60Hz, resetn, map,oy_8);
+  vga_double_buffering_9 U13(clk, clk_60Hz, resetn, map,oy_9);
+  vga_double_buffering_10 U14(clk, clk_60Hz, resetn,map, oy_10);
+  hex_decoder U15({1'b0,health[2:0]}, HEX3);
  
 
 reg [223:0] title [31:0] ; 
@@ -245,32 +252,26 @@ lose_result[23] <= 96'h000000000000000000000000;
 
 end
   
-  always @(posedge clk)
-    if (!resetn) begin
-      x <= 0;
-      y <= 0;
-    end
-    else if (x < 319) begin
-      x <= x + 1;
-    end 
-    else begin
-      x <= 0;
-      if (y < 239) begin
-        y <= y + 1;
-      end else begin
-        y <= 0;
-      end
-    end
+
 
   always @(posedge clk_10Hz)
-    if (!resetn)
+    if (!resetn || !map)
       note_address <= 0;
-	 else if(ui) note_address <= 0;
     else //if(map && !done)   error here
       note_address <= note_address + 1;
 
-		
-  always@(posedge clk_50Hz)
+
+	always@(*)
+	if ((hard || master) && ui)  difficulty <= 1'b1;
+	else if (easy && ui) difficulty <= 1'b0;
+	
+	always@(*)
+	if (master && ui)  Master <= 1'b1;
+	else if ((easy|| hard)  && ui) Master <= 1'b0;
+	
+reg note_update = 0;
+	
+  always@(posedge clk_60Hz)
   begin
   if (!map)
   begin
@@ -297,8 +298,51 @@ end
 		  y_position[8] <= 8'd160;
 		  y_position[9] <= 8'd180;
 		  y_position[10] <= 8'd200;
+		  temp[1][0] <= screen[0][0];
+  temp[2][0] <= 4'b0;
+  temp[3][0] <= 4'b0;
+  temp[4][0] <= 4'b0;
+  temp[5][0] <= 4'b0;
+  temp[6][0] <= 4'b0;
+  temp[7][0] <= 4'b0;
+  temp[8][0] <= 4'b0;
+  temp[9][0] <= 4'b0;
+  temp[10][0] <=4'b0;
+
+  temp[1][1] <= 4'b0;
+  temp[2][1] <= 4'b0;
+  temp[3][1] <= 4'b0;
+  temp[4][1] <= 4'b0;
+  temp[5][1] <= 4'b0;
+  temp[6][1] <= 4'b0;
+  temp[7][1] <= 4'b0;
+  temp[8][1] <= 4'b0;
+  temp[9][1] <= 4'b0;
+  temp[10][1] <=4'b0;
+
+  temp[1][2] <= 4'b0;
+  temp[2][2] <= 4'b0;
+  temp[3][2] <= 4'b0;
+  temp[4][2] <= 4'b0;
+  temp[5][2] <= 4'b0;
+  temp[6][2] <= 4'b0;
+  temp[7][2] <= 4'b0;
+  temp[8][2] <= 4'b0;
+  temp[9][2] <= 4'b0;
+  temp[10][2] <=4'b0;
+
+  temp[1][3] <= 4'b0;
+  temp[2][3] <= 4'b0;
+  temp[3][3] <= 4'b0;
+  temp[4][3] <= 4'b0;
+  temp[5][3] <= 4'b0;
+  temp[6][3] <= 4'b0;
+  temp[7][3] <= 4'b0;
+  temp[8][3] <= 4'b0;
+  temp[9][3] <= 4'b0;
+  temp[10][3] <=4'b0;
   end
-  if(counter < 3'b100 && map) 
+  if(counter < 3'b11 && map) 
   begin
   counter <= counter+1;
   
@@ -327,6 +371,64 @@ y_position[10] <= oy_10;
 
   end
   
+  else if (counter == 3'b011 && map) begin
+  counter <= counter+1;
+  temp[1][0] <= screen[0][0];
+  temp[2][0] <= screen[1][0];
+  temp[3][0] <= screen[2][0];
+  temp[4][0] <= screen[3][0];
+  temp[5][0] <= screen[4][0];
+  temp[6][0] <= screen[5][0];
+  temp[7][0] <= screen[6][0];
+  temp[8][0] <= screen[7][0];
+  temp[9][0] <= screen[8][0];
+  temp[10][0] <= screen[9][0];
+
+  temp[1][1] <= screen[0][1];
+  temp[2][1] <= screen[1][1];
+  temp[3][1] <= screen[2][1];
+  temp[4][1] <= screen[3][1];
+  temp[5][1] <= screen[4][1];
+  temp[6][1] <= screen[5][1];
+  temp[7][1] <= screen[6][1];
+  temp[8][1] <= screen[7][1];
+  temp[9][1] <= screen[8][1];
+  temp[10][1] <= screen[9][1];
+
+  temp[1][2] <= screen[0][2];
+  temp[2][2] <= screen[1][2];
+  temp[3][2] <= screen[2][2];
+  temp[4][2] <= screen[3][2];
+  temp[5][2] <= screen[4][2];
+  temp[6][2] <= screen[5][2];
+  temp[7][2] <= screen[6][2];
+  temp[8][2] <= screen[7][2];
+  temp[9][2] <= screen[8][2];
+  temp[10][2] <= screen[9][2];
+
+  temp[1][3] <= screen[0][3];
+  temp[2][3] <= screen[1][3];
+  temp[3][3] <= screen[2][3];
+  temp[4][3] <= screen[3][3];
+  temp[5][3] <= screen[4][3];
+  temp[6][3] <= screen[5][3];
+  temp[7][3] <= screen[6][3];
+  temp[8][3] <= screen[7][3];
+  temp[9][3] <= screen[8][3];
+  temp[10][3] <= screen[9][3];
+  
+y_position[0] <= oy_0;
+y_position[1] <= oy_1;
+y_position[2] <= oy_2;
+y_position[3] <= oy_3;
+y_position[4] <= oy_4;
+y_position[5] <= oy_5;
+y_position[6] <= oy_6;
+y_position[7] <= oy_7;
+y_position[8] <= oy_8;
+y_position[9] <= oy_9;
+y_position[10] <= oy_10;
+  end
   else if (counter == 3'b100 && map)begin
   counter <= 0;
   screen[1][0] <= screen[0][0];
@@ -373,10 +475,7 @@ y_position[10] <= oy_10;
   screen[9][3] <= screen[8][3];
   screen[10][3] <= screen[9][3];
 
-  screen[0][0] <= note[0];
-  screen[0][1] <= note[1];
-  screen[0][2] <= note[2];
-  screen[0][3] <= note[3];
+
 
   y_position[0] <= 8'd0;
   y_position[1] <= 8'd20;
@@ -389,6 +488,33 @@ y_position[10] <= oy_10;
   y_position[8] <= 8'd160;
   y_position[9] <= 8'd180;
   y_position[10] <= 8'd200;
+  if (difficulty)
+  begin
+  screen[0][0] <= note[0];
+  screen[0][1] <= note[1];
+  screen[0][2] <= note[2];
+  screen[0][3] <= note[3];
+  end
+  else if(!difficulty)
+  begin
+  if (note_update)
+  begin
+  screen[0][0] <= note[0];
+  screen[0][1] <= note[1];
+  screen[0][2] <= note[2];
+  screen[0][3] <= note[3];
+  note_update <= 1'b0;
+  end
+  else
+  begin
+  screen[0][0] <= 0;
+  screen[0][1] <= 0;
+  screen[0][2] <= 0;
+  screen[0][3] <= 0;
+  note_update <= 1'b1;
+  end
+  
+  end
   end
 
   end
@@ -400,28 +526,102 @@ y_position[10] <= oy_10;
 	else done <= 1'b0;
   end
   
-  
-		
-  always @(*)
+  always@(*)
   begin
-	if(!resetn || ui) possible_miss <= 4'b0;
-	else if(y_position[10] == 8'd200)
-		possible_miss[3] <= 1'b0;
-	else if(y_position[10] == 8'd204 && screen[10][3])
-		possible_miss[3] <= 1'b1;
-	else if(y_position[10] > 8'd204 && key_3)
-		possible_miss[3] <= 1'b0;
-	else	possible_miss[3] = possible_miss[3];
-  end
+	if(!map) Start <= 0;
+	else if(note_address == 12) Start <= 1;
+	else if (done || win || lose) Start <= 0;
+	end
+
+	always @(posedge clk)
+	begin
+	if(y_position[10] == 8'd200) 
+	begin 
+	press_0 <= 1'b0; 
+	press_1 <= 1'b0; 
+	press_2 <= 1'b0; 
+	press_3 <= 1'b0; 
+	end
+	else 
+	begin
+	if(key_0) press_0 <= 1'b1;
+	if(key_1) press_1 <= 1'b1;
+	if(key_2) press_2 <= 1'b1;
+	if(key_3) press_3 <= 1'b1;
+	end
+	end
+
 	
- always@(*)
- begin
-	if (!resetn || ui) miss <= 0;
-	else if (y_position[10] == 8'd216 && possible_miss[3] == 1'b1)
-		miss <= 1;
+	always@(posedge clk_60Hz)
+	begin
+ 	if (y_position[10] >= 8'd210 && ((screen[10][1] && !press_1) || (screen[10][2] && !press_2) || (screen[10][3] && !press_3) ||(screen[10][0] && !press_0))) miss<= 1;
 	else miss <= 0;
- end
+	end
+	
+	always@(posedge clk_60Hz)
+	begin
+	if (chance && y_position[10] >= 8'd210 && screen[10][1] && press_1) recover <= 1;
+	else recover <= 0;
+	end
+	
+	
+//  always @(posedge clk)
+//  begin
+//	if(!resetn || ui) possible_miss <= 4'b0;
+//	else if (map)
+//	begin
+//	if (y_position[10] == 8'd200 )
+//		possible_miss[3] <= 1'b0;
+//	else if(y_position[10] == 8'd204 && screen[10][3]  && !key_3)
+//		possible_miss[3] <= 1'b1;
+//	else if(y_position[10] > 8'd204 && key_3)
+//		possible_miss[3] <= 1'b0;
+//	else	possible_miss[3] = possible_miss[3];
+//  end
+//	end
+//
+// always@(posedge clk)
+// begin
+//	if (!resetn || ui) miss <= 0;
+//	else if (y >=1)//_position[10] == 8'd216 && possible_miss[3] == 1'b1)
+//		miss <= 1;
+//	else miss <= 0;
+// end
  
+ reg [20:0] timer = 21'd0;
+ reg [20:0] white = 21'd0;
+
+always @(posedge clk) 
+begin
+	if (!resetn || (vs && timer ==0 ))  begin  timer <= 0; end
+		else 
+	 begin
+    timer <= timer + 21'd1;
+	 if (timer == 21'd1666666) begin
+        timer <= 21'd0; 
+    end
+	 end
+end
+
+
+	
+
+  always @(posedge clk)
+    if (!resetn || timer == 0) begin
+      x <= 0;
+      y <= 0;
+    end
+    else if (x < 319 ) begin
+      x <= x + 1;
+    end 
+    else begin
+      x <= 0;
+      if (y < 239) begin
+        y <= y + 1;
+      end else begin
+        y <= 0;
+      end
+    end
  
   always @(posedge clk)
   begin
@@ -441,12 +641,13 @@ y_position[10] <= oy_10;
 		else
 			colour <= 3'b111;
 	end
-	
-	else if (map)
+	//if (y == 20 || y == 40 || y == 60 || y == 80 || y == 120 ||y ==140||y==160||y==180||y==200||y==220) colour <=3'b100;
+	else if (map) //&& timer <= 76800)
 	begin
 	if ( x>=125 && x<= 140)
 		begin
-			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
+			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;	 
+			
 			else if((screen[y/20][3] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][3] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b101;
 			else colour <= 3'b111;
 		end
@@ -459,7 +660,9 @@ y_position[10] <= oy_10;
 	else if (x>=161 && x<= 176)
 		begin
 			if (y== 9'd220 || y == 9'd221) colour <= 3'b000;
-			else if((screen[y/20][1] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][1] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b011;
+			else if(( chance == 0 && screen[y/20][1] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][1] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b011;
+			else if((chance && screen[y/20][1] && y>= y_position[y/20] && y<= (y_position[y/20]+10) && y <= 219) || (screen[y/20-1][1] && y>= y_position[y/20-1] && y<= (y_position[y/20-1]+10) && y <= 219)) colour <= 3'b100;
+			
 			else colour <= 3'b111;
 		end
 	else if ( x>=179 && x<= 194)
@@ -501,6 +704,9 @@ y_position[10] <= oy_10;
 				colour <= 3'b111;
 		end
 	end
+	
+	
+
 endmodule
 
 
@@ -529,4 +735,3 @@ end
 
 
 endmodule
-

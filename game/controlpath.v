@@ -1,7 +1,7 @@
-module control_path(clk, resetn, key_1, key_2, miss, done, interface, map, total_miss, win, lose); 
+module control_path(clk, resetn, key_1, key_2, miss, recover, Master, done, interface, map, chance, total_miss, win, lose); 
 
-input clk, resetn, key_1, key_2, miss,done;
-output reg interface, map, win, lose;
+input clk, resetn, key_1, key_2, miss,done,recover, Master;
+output reg interface, map, win, lose,chance;
 output reg [2:0] total_miss;
 
 parameter IDLE =5'b00000,
@@ -23,9 +23,12 @@ RESULT_1 = 5'b01111,
 RESULT_2 = 5'b10000,
 
 RESULT_1_WAIT = 5'b10001,
-RESULT_2_WAIT = 5'b10010;
+RESULT_2_WAIT = 5'b10010,
+STATE_RECOVER = 5'b10011,
+STATE_4_NEW = 5'b10100,
+STATE_4_WAIT_NEW = 5'b10101;
 
-reg [3:0] current, next;
+reg [4:0] current, next;
 
 always@(*)
 begin
@@ -54,6 +57,7 @@ begin
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
+			else if(Master) next = miss? STATE_0_WAIT:STATE_2;
 			else next = miss? STATE_0_WAIT:STATE_1;
 			end
 			
@@ -84,7 +88,8 @@ begin
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_2_WAIT:STATE_3;
+			else if(Master) next = miss? STATE_2_WAIT:STATE_4_NEW;
+			else  next = miss? STATE_2_WAIT:STATE_3;
 			end
 			
 		STATE_3 : begin 
@@ -114,7 +119,32 @@ begin
 			if (key_2)
 				next = IDLE;
 			else if (done) next = RESULT_2; 
-			else next = miss? STATE_4_WAIT:STATE_5;
+			else next = miss? STATE_4_WAIT:STATE_RECOVER;
+			end
+			
+		STATE_RECOVER:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else if (recover) next = STATE_4_NEW;
+			else next = miss? STATE_5_WAIT:STATE_RECOVER;
+			end	
+			
+		STATE_4_NEW : begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else next = miss? STATE_4_WAIT_NEW : STATE_4_NEW;
+			end
+			
+		STATE_4_WAIT_NEW:
+		begin 
+			if (key_2)
+				next = IDLE;
+			else if (done) next = RESULT_2; 
+			else if(Master) next = miss? STATE_4_WAIT_NEW:STATE_6;
+			else next = miss? STATE_4_WAIT_NEW:STATE_5;
 			end
 			
 		STATE_5 : begin 
@@ -160,6 +190,7 @@ begin
 	win <= 1'b0;
 	lose <= 1'b0;
 	total_miss <= 3'b0;	
+	chance <= 1'b0;
 	end
 	
 	IDLE_WAIT: begin 
@@ -168,6 +199,7 @@ begin
 	win <= 1'b0;
 	lose <= 1'b0;
 	total_miss <= 3'b0;	
+	chance <= 1'b0;
 	end
 	
 	STATE_0: begin 
@@ -176,6 +208,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd0; 
+	chance <= 1'b0;
 	end
 	
 	STATE_0_WAIT:begin
@@ -184,6 +217,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd0; 
+	chance <= 1'b0;
 	end
 	
 	STATE_1: begin 
@@ -192,6 +226,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd1; 
+	chance <= 1'b0;
 	end
 	
 	STATE_1_WAIT:begin
@@ -200,6 +235,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd2; 
+	chance <= 1'b0;
 	end
 	
 	STATE_2: begin 
@@ -208,6 +244,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd2; 
+	chance <= 1'b0;
 	end
 	
 	STATE_2_WAIT:begin
@@ -216,6 +253,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd3; 
+	chance <= 1'b0;
 	end
 	
 	STATE_3:begin 
@@ -224,6 +262,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd3;
+	chance <= 1'b0;
 	end
 	
 	STATE_3_WAIT:begin
@@ -232,6 +271,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd4; 
+	chance <= 1'b0;
 	end
 	
 	STATE_4: begin 
@@ -240,6 +280,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd4; 
+	chance <= 1'b0;
 	end
 	
 	STATE_4_WAIT:begin
@@ -248,6 +289,35 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd5; 
+	chance <= 1'b0;
+	end
+	
+	STATE_RECOVER:
+	begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1;  
+	total_miss <= 3'd5; 
+	chance <= 1'b1;	
+	end
+	
+	STATE_4_NEW:begin 
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd4; 
+	chance <= 1'b0;
+	end
+	
+	STATE_4_WAIT_NEW:begin
+	interface <= 1'b0;
+	win <= 1'b0;
+	lose <= 1'b0;
+	map <= 1'b1; 
+	total_miss <= 3'd5; 
+	chance <= 1'b0;
 	end
 	
 	STATE_5: begin 
@@ -256,6 +326,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd5; 
+	chance <= 1'b0;
 	end
 	
 	STATE_5_WAIT:begin
@@ -264,6 +335,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1; 
 	total_miss <= 3'd6; 
+	chance <= 1'b0;
 	end
 	
 	STATE_6: begin 
@@ -272,6 +344,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b1;  
 	total_miss <= 3'd6;
+	chance <= 1'b0;
 	end
 	
 	RESULT_1: begin
@@ -280,6 +353,7 @@ begin
 	lose <= 1'b1;
 	map <= 1'b0; 
 	total_miss <= 3'd7; 
+	chance <= 1'b0;
 	end
 	
 	RESULT_1_WAIT: begin
@@ -288,6 +362,7 @@ begin
 	lose <= 1'b1;
 	map <= 1'b0; 
 	total_miss <= 3'd0; 
+	chance <= 1'b0;
 	end
 	
 	RESULT_2: begin
@@ -296,6 +371,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b0; 
 	total_miss <= total_miss;
+	chance <= 1'b0;
 	end
 	
 	RESULT_2_WAIT: begin
@@ -304,6 +380,7 @@ begin
 	lose <= 1'b0;
 	map <= 1'b0; 
 	total_miss <= total_miss;
+	chance <= 1'b0;
 	end
 	endcase
 end
