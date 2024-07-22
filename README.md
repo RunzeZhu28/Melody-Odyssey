@@ -2,4 +2,6 @@
 
 A rhythem game based on De1-SoC board.
 
-https://github.com/user-attachments/assets/88b7c5da-6b43-4116-8be5-64aa317078da
+# Demo
+PS2 keyboard is not shown in demo, but it is supported in code.
+https://github.com/user-attachments/assets/25117be6-a77f-48e2-995c-4abe08f4c7dd
